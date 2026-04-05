@@ -1,0 +1,24 @@
+{
+  "adminPassword": "Mundial2026Admin",
+  "main": {
+    "title": { "label": "Nombre del Producto Comercial", "value": "Mundial FIFA 2026 - Programa Elite" },
+    "charterBase": { "label": "Base Terrestre (13 Noches - Gold Doble)", "value": 14260.0 },
+    "charterFlight": { "label": "Costo Ticket Aéreo Chárter (GYE)", "value": 2770.0 }
+  },
+  "individual": {
+    "phl": { "label": "Philadelphia: Solo Hotel y Logística", "value": 3200.0 },
+    "kansas": { "label": "Kansas City: Solo Hotel y Logística", "value": 2500.0 },
+    "nj": { "label": "New Jersey: Solo Hotel y Logística", "value": 4800.0 }
+  },
+  "tickets": {
+    "m1": { "label": "Valor de Entrada Estadio 1", "value": 550.0 },
+    "m2": { "label": "Valor de Entrada Estadio 2", "value": 480.0 },
+    "m3": { "label": "Valor de Entrada Estadio 3", "value": 750.0 }
+  },
+  "rules": {
+    "silver": { "label": "Factor Descuento Silver", "value": 0.85 },
+    "bronze": { "label": "Factor Descuento Bronze", "value": 0.70 },
+    "single": { "label": "Factor Recargo Hab. Simple", "value": 1.45 },
+    "triple": { "label": "Factor Ahorro Hab. Triple", "value": 0.88 }
+  }
+}
