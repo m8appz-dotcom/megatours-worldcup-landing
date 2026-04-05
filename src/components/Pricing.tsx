@@ -47,6 +47,21 @@ const MATCHES = [
  }
 ];
 
+const Tooltip = ({ text, children }: { text: string, children: React.ReactNode }) => {
+ const [show, setShow] = useState(false);
+ return (
+ <div className="relative inline-block w-full" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+ {children}
+ {show && (
+ <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 p-3 bg-[#1A1D24] text-[10px] text-[#6B75A1] rounded-xl shadow-2xl border border-[#2A2E37] leading-tight animate-in fade-in slide-in-from-bottom-1">
+ {text}
+ <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1A1D24]" />
+ </div>
+ )}
+ </div>
+ );
+};
+
 export const Pricing = () => {
  const [config, setConfig] = useState<any>(null);
  const [isLoading, setIsLoading] = useState(true);
@@ -74,10 +89,7 @@ export const Pricing = () => {
   let total = 0;
   
   if (includeCharter) {
-   // Lógica de Chárter: Base Terrestre + Vuelo
    total = config.main.charterBase.value + config.main.charterFlight.value;
-   
-   // Si quita ciudades, restamos el valor individual (Hotel+Logística) Y la Entrada
    const inactiveIds = [1, 2, 3].filter(id => !activeMatchIds.includes(id));
    inactiveIds.forEach(id => {
     const match = MATCHES.find(m => m.id === id);
@@ -87,7 +99,6 @@ export const Pricing = () => {
     }
    });
   } else {
-   // Lógica Sin Chárter (Solo Land): Suma de ciudades activas
    total = activeMatchIds.reduce((acc, id) => {
     const match = MATCHES.find(m => m.id === id);
     if (!match) return acc;
@@ -95,18 +106,13 @@ export const Pricing = () => {
    }, 0);
   }
 
-  // Multiplicador de Hotel (solo aplica a la parte terrestre, pero aquí simplificamos según el Admin)
   const hotelMultiplier = hotelQuality === 'Gold' ? 1 : 
                          hotelQuality === 'Silver' ? config.rules.silver.value : 
                          config.rules.bronze.value;
   
   total = total * hotelMultiplier;
-
-  // Descuento de Categoría de Ticket
-  const TICKET_DISCOUNTS = [0, -400, -600]; // CAT1=0, CAT2=-400, CAT3=-600
+  const TICKET_DISCOUNTS = [0, -400, -600]; 
   total += (activeMatchIds.length * TICKET_DISCOUNTS[ticketCat]);
-
-  // Descuento Paquete Completo (5%)
   if (activeMatchIds.length === 3) total *= 0.95;
 
   return Math.max(total, 0);
