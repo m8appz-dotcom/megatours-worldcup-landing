@@ -295,57 +295,57 @@ export const Pricing = () => {
  </div>
  </section>
 
- {/* CONFIGURACIÓN ADICIONAL */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
- <section>
- <div className="flex items-center gap-3 mb-4 md:mb-6 text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#6B75A1]">Calidad de Hoteles</div>
- <div className="flex bg-[#1A1D24] rounded-xl md:rounded-2xl p-1 md:p-1.5 border border-[#2A2E37]">
- {(['Gold', 'Silver', 'Bronze'] as const).map(cat => (
- <Tooltip key={cat} text={DESCRIPTIONS[cat as keyof typeof DESCRIPTIONS]}>
- <button
- onClick={() => setHotelQuality(cat)}
- className={`w-full py-3 md:py-4 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-bold transition-all uppercase tracking-widest ${
- hotelQuality === cat ? 'bg-[#0033A0] text-white shadow-xl' : 'text-slate-500 hover:text-white'
- }`}
- >
- {cat}
- </button>
- </Tooltip>
- ))}
- </div>
- </section>
- <section>
- <div className="flex items-center gap-3 mb-4 md:mb-6 text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#6B75A1]">Nivel de Ticket</div>
- <div className="grid grid-cols-3 gap-2 md:gap-3">
- {['CAT 1', 'CAT 2', 'CAT 3'].map((cat, idx) => (
- <Tooltip key={cat} text={DESCRIPTIONS[`Cat${idx+1}` as keyof typeof DESCRIPTIONS]}>
- <button
- onClick={() => setTicketCat(idx)}
- className={`w-full py-3 md:py-4 rounded-lg md:rounded-xl border-2 text-[9px] md:text-[10px] font-bold transition-all uppercase tracking-widest ${
- ticketCat === idx ? 'border-[#FCD116] bg-[#FCD116]/10 text-[#FCD116]' : 'border-[#2A2E37] text-slate-500 hover:border-slate-500'
- }`}
- >
- {cat}
- </button>
- </Tooltip>
- ))}
- </div>
- </section>
- </div>
- </div>
+      {/* CONFIGURACIÓN ADICIONAL */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <section>
+          <div className="flex items-center gap-3 mb-4 text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#6B75A1]">Calidad de Hoteles</div>
+          <div className="flex flex-col gap-2 bg-[#1A1D24] rounded-xl md:rounded-2xl p-2 border border-[#2A2E37]">
+            {(['Gold', 'Silver', 'Bronze'] as const).map(cat => (
+              <Tooltip key={cat} text={DESCRIPTIONS[cat as keyof typeof DESCRIPTIONS]}>
+                <button
+                  onClick={() => setHotelQuality(cat)}
+                  className={`w-full py-3.5 md:py-4 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition-all uppercase tracking-widest ${
+                    hotelQuality === cat ? 'bg-[#0033A0] text-white shadow-xl' : 'text-slate-500 hover:text-white'
+                  }`}
+                >
+                  {cat}
+                </button>
+              </Tooltip>
+            ))}
+          </div>
+        </section>
+        <section>
+          <div className="flex items-center gap-3 mb-4 text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#6B75A1]">Nivel de Ticket</div>
+          <div className="flex flex-col gap-2 bg-[#1A1D24] rounded-xl md:rounded-2xl p-2 border border-[#2A2E37]">
+            {['CAT 1', 'CAT 2', 'CAT 3'].map((cat, idx) => (
+              <Tooltip key={cat} text={DESCRIPTIONS[`Cat${idx+1}` as keyof typeof DESCRIPTIONS]}>
+                <button
+                  onClick={() => setTicketCat(idx)}
+                  className={`w-full py-3.5 md:py-4 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition-all uppercase tracking-widest ${
+                    ticketCat === idx ? 'bg-[#FCD116] text-[#0A0C12]' : 'text-slate-500 hover:text-white'
+                  }`}
+                >
+                  {cat}
+                </button>
+              </Tooltip>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
 
- {/* TOTALES */}
- <div className="lg:col-span-5">
- <div className="static lg:sticky lg:top-12 bg-white rounded-3xl md:rounded-[3.5rem] p-8 md:p-12 text-[#0A0C12] shadow-2xl border-t-[8px] md:border-t-[12px] border-[#FCD116] mt-8 lg:mt-0">
- <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#6B75A1] mb-4 md:mb-6 text-center">Inversión Final</h4>
- 
- <div className="text-center mb-8 md:mb-10">
- <div className="text-5xl md:text-7xl font-bold tracking-tighter leading-none mb-2 text-[#0A0C12]">
- <span className="text-2xl md:text-4xl align-top mr-1 font-semibold text-[#0033A0]">$</span>
- {formatPrice(currentPrice * quantity)}
- </div>
- <div className="bg-[#0A0C12] text-[#FCD116] inline-block px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em]">Neto Proyectado</div>
- </div>
+    {/* TOTALES */}
+    <div className="lg:col-span-5">
+      <div className="static lg:sticky lg:top-12 bg-white rounded-3xl md:rounded-[3.5rem] p-8 md:p-12 text-[#0A0C12] shadow-2xl border-t-[8px] md:border-t-[12px] border-[#FCD116] mt-8 lg:mt-0">
+        <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] text-[#6B75A1] mb-6 md:mb-8 text-center">Inversión Final</h4>
+        
+        <div className="text-center mb-10 md:mb-12">
+          <div className="text-5xl md:text-7xl font-bold tracking-tighter leading-none mb-3 text-[#0A0C12]">
+            <span className="text-2xl md:text-4xl align-top mr-1 font-semibold text-[#0033A0]">$</span>
+            {formatPrice(currentPrice * quantity)}
+          </div>
+          <div className="bg-[#0A0C12] text-[#FCD116] inline-block px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">Neto Proyectado</div>
+        </div>
 
  {/* PASAJEROS */}
  <div className="bg-[#0A0C12] text-white rounded-2xl md:rounded-[2.5rem] p-6 md:p-8 mb-6 md:mb-8 flex items-center justify-between shadow-xl">
