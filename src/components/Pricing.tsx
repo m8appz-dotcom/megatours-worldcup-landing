@@ -109,7 +109,8 @@ export const Pricing = () => {
   total += staysCost;
 
   // 3. TICKETS (Entradas)
-  const TICKET_CAT_OFFSETS = [0, -400, -600]; 
+  // CAT 1: Base, CAT 2: -350, CAT 3: -550
+  const TICKET_CAT_OFFSETS = [0, -350, -550]; 
   activeTicketIds.forEach(id => {
     const match = MATCHES.find(m => m.id === id);
     if (match) {

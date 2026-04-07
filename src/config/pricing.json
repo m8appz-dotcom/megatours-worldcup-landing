@@ -11,9 +11,9 @@
     "nj": { "label": "New Jersey (Stay)", "value": 8000.0 }
   },
   "tickets": {
-    "m1": { "label": "Entrada 1", "value": 605.0 },
-    "m2": { "label": "Entrada 2", "value": 605.0 },
-    "m3": { "label": "Entrada 3", "value": 605.0 }
+    "m1": { "label": "Entrada 1", "value": 900.0 },
+    "m2": { "label": "Entrada 2", "value": 900.0 },
+    "m3": { "label": "Entrada 3", "value": 900.0 }
   },
   "rules": {
     "silver": { "label": "Factor Silver", "value": 0.81 },
