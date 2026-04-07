@@ -1,24 +1,25 @@
 {
   "adminPassword": "Mundial2026Admin",
   "main": {
-    "title": { "label": "Nombre del Producto Comercial", "value": "MUNDIAL 2026 - TEST DE PRODUCCIÓN" },
-    "charterBase": { "label": "Base Terrestre (13 Noches - Gold Doble)", "value": 15000.0 },
-    "charterFlight": { "label": "Costo Ticket Aéreo Chárter (GYE)", "value": 3000.0 }
+    "title": { "label": "Megatours Mundial 2026", "value": "MEGATOURS - WORLD CUP 2026" },
+    "charterBase": { "label": "Estancia Chárter (Gold Single)", "value": 20820.0 },
+    "charterFlight": { "label": "Vuelo Chárter GYE-USA-GYE", "value": 2770.0 }
   },
   "individual": {
-    "phl": { "label": "Philadelphia: Solo Hotel y Logística", "value": 3500.0 },
-    "kansas": { "label": "Kansas City: Solo Hotel y Logística", "value": 2800.0 },
-    "nj": { "label": "New Jersey: Solo Hotel y Logística", "value": 5200.0 }
+    "phl": { "label": "Philadelphia (Stay)", "value": 6500.0 },
+    "kansas": { "label": "Kansas City (Stay)", "value": 6320.0 },
+    "nj": { "label": "New Jersey (Stay)", "value": 8000.0 }
   },
   "tickets": {
-    "m1": { "label": "Valor de Entrada Estadio 1", "value": 600.0 },
-    "m2": { "label": "Valor de Entrada Estadio 2", "value": 550.0 },
-    "m3": { "label": "Valor de Entrada Estadio 3", "value": 800.0 }
+    "m1": { "label": "Entrada 1", "value": 605.0 },
+    "m2": { "label": "Entrada 2", "value": 605.0 },
+    "m3": { "label": "Entrada 3", "value": 605.0 }
   },
   "rules": {
-    "silver": { "label": "Factor Descuento Silver", "value": 0.85 },
-    "bronze": { "label": "Factor Descuento Bronze", "value": 0.70 },
-    "single": { "label": "Factor Recargo Hab. Simple", "value": 1.45 },
-    "triple": { "label": "Factor Ahorro Hab. Triple", "value": 0.88 }
+    "silver": { "label": "Factor Silver", "value": 0.81 },
+    "bronze": { "label": "Factor Bronze", "value": 0.63 },
+    "single": { "label": "Factor Single", "value": 1.0 },
+    "double": { "label": "Factor Doble", "value": 0.61 },
+    "triple": { "label": "Factor Triple", "value": 0.53 }
   }
 }

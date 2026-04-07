@@ -70,6 +70,7 @@ export const Pricing = () => {
  const [activeTicketIds, setActiveTicketIds] = useState([1, 2, 3]);
  const [includeCharter, setIncludeCharter] = useState(true);
  const [hotelQuality, setHotelQuality] = useState<'Gold' | 'Silver' | 'Bronze'>('Gold');
+ const [roomType, setRoomType] = useState<'single' | 'double' | 'triple'>('single');
  const [ticketCat, setTicketCat] = useState(0);
  const [quantity, setQuantity] = useState(1);
  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
@@ -88,35 +89,27 @@ export const Pricing = () => {
   if (!config) return 0;
 
   // 1. TRANSPORTE (Vuelo)
-  let total = config.main.charterFlight.value;
+  let total = includeCharter ? config.main.charterFlight.value : 0;
 
-  // 2. ESTANCIA (Ciudades/Hoteles)
+  // 2. ESTANCIA (Ciudades/Hoteles/Ocupación)
   const hotelMultiplier = hotelQuality === 'Gold' ? 1 : 
                          hotelQuality === 'Silver' ? config.rules.silver.value : 
                          config.rules.bronze.value;
   
-  let staysBase = 0;
-  if (includeCharter) {
-    // Modelo Chárter: Base de 13 noches menos ciudades no visitadas
-    staysBase = config.main.charterBase.value;
-    [1, 2, 3].forEach(id => {
-      if (!activeCityIds.includes(id)) {
-        const match = MATCHES.find(m => m.id === id);
-        if (match) staysBase -= config.individual[match.configKey].value;
-      }
-    });
-  } else {
-    // Modelo Individual: Solo ciudades seleccionadas
-    activeCityIds.forEach(id => {
-      const match = MATCHES.find(m => m.id === id);
-      if (match) staysBase += config.individual[match.configKey].value;
-    });
-  }
+  const roomMultiplier = config.rules[roomType].value;
   
-  total += (staysBase * hotelMultiplier);
+  let staysCost = 0;
+  activeCityIds.forEach(id => {
+    const match = MATCHES.find(m => m.id === id);
+    if (match) {
+      staysCost += (config.individual[match.configKey].value * hotelMultiplier * roomMultiplier);
+    }
+  });
+
+  total += staysCost;
 
   // 3. TICKETS (Entradas)
-  const TICKET_CAT_OFFSETS = [0, -400, -600]; // CAT 1: base, CAT 2: -$400, CAT 3: -$600
+  const TICKET_CAT_OFFSETS = [0, -400, -600]; 
   activeTicketIds.forEach(id => {
     const match = MATCHES.find(m => m.id === id);
     if (match) {
@@ -131,7 +124,7 @@ export const Pricing = () => {
   }
 
   return Math.max(total, 0);
- }, [config, activeCityIds, activeTicketIds, includeCharter, hotelQuality, ticketCat]);
+ }, [config, activeCityIds, activeTicketIds, includeCharter, hotelQuality, roomType, ticketCat]);
 
  const formatPrice = (value: number) => {
   return value.toLocaleString('en-US', { 
@@ -155,10 +148,12 @@ export const Pricing = () => {
   Gold: "Hoteles 5* Superior. Ubicación Premium.",
   Silver: config?.rules?.silver?.label || "Hoteles 4*",
   Bronze: config?.rules?.bronze?.label || "Hoteles 3*",
-  Charter: config?.main?.charterFlight?.label || "Vuelo Privado",
-  Cat1: "Laterales Bajos. Visión de campo completa.",
-  Cat2: "Laterales Altos. Perspectiva táctica.",
-  Cat3: "Cabeceras. El corazón de la hinchada."
+  single: "Habitación para 1 persona.",
+  double: "Habitación compartida para 2 personas.",
+  triple: "Habitación compartida para 3 personas.",
+  Cat1: "Laterales Bajos. Visión completa.",
+  Cat2: "Laterales Altos. Vista táctica.",
+  Cat3: "Cabeceras. Máxima pasión."
  };
 
  if (wizardStep === 1) {
@@ -235,7 +230,7 @@ export const Pricing = () => {
  </div>
  <div className="bg-[#1A1D24] border border-[#2A2E37] p-4 md:p-6 rounded-2xl md:rounded-[2rem] flex items-center gap-6 md:gap-8 w-full md:w-auto justify-center md:justify-start">
  <div className="flex flex-col items-center md:items-start">
- <span className="text-[8px] md:text-[10px] font-bold text-[#6B75A1] uppercase tracking-widest mb-1">{config?.main?.title?.value || "Inversión x Persona"}</span>
+ <span className="text-[8px] md:text-[10px] font-bold text-[#6B75A1] uppercase tracking-widest mb-1">Inversión x Persona ({roomType})</span>
  <span className="text-3xl md:text-4xl font-bold tracking-tighter text-white">${formatPrice(currentPrice)}</span>
  </div>
  </div>
@@ -353,6 +348,27 @@ export const Pricing = () => {
           </div>
         </section>
         <section>
+          <div className="flex items-center gap-3 mb-4 md:mb-6 text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#6B75A1]">Ocupación</div>
+          <div className="flex bg-[#1A1D24] rounded-xl md:rounded-2xl p-1 md:p-1.5 border border-[#2A2E37]">
+            {(['single', 'double', 'triple'] as const).map(type => (
+              <Tooltip key={type} text={DESCRIPTIONS[type as keyof typeof DESCRIPTIONS]}>
+                <button
+                  onClick={() => {
+                    setRoomType(type);
+                    if (type === 'double' && quantity < 2) setQuantity(2);
+                    if (type === 'triple' && quantity < 3) setQuantity(3);
+                  }}
+                  className={`w-full py-3 md:py-4 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-bold transition-all uppercase tracking-widest ${
+                    roomType === type ? 'bg-[#FCD116] text-[#0A0C12] shadow-xl' : 'text-slate-500 hover:text-white'
+                  }`}
+                >
+                  {type}
+                </button>
+              </Tooltip>
+            ))}
+          </div>
+        </section>
+        <section className="md:col-span-2">
           <div className="flex items-center gap-3 mb-4 md:mb-6 text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#6B75A1]">Nivel de Ticket</div>
           <div className="grid grid-cols-3 gap-2 md:gap-3">
             {['CAT 1', 'CAT 2', 'CAT 3'].map((cat, idx) => (
@@ -417,7 +433,7 @@ export const Pricing = () => {
  <div className="flex flex-col min-w-0 pr-4">
  <span className="text-slate-900 leading-none mb-1 truncate">🏨 Módulo Logística {m.sede}</span>
  <span className="text-[7px] md:text-[8px] text-[#6B75A1] font-black uppercase tracking-widest leading-none">
-  Hotel {hotelQuality} + Traslados
+  Hotel {hotelQuality} ({roomType})
  </span>
  </div>
  <span className="text-slate-400 font-black tracking-widest uppercase text-[8px] md:text-[9px] flex-shrink-0">Tierra</span>
