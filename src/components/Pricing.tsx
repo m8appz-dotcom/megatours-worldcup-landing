@@ -109,8 +109,13 @@ export const Pricing = () => {
   total += staysCost;
 
   // 3. TICKETS (Entradas)
-  // CAT 1: Base, CAT 2: -350, CAT 3: -550
-  const TICKET_CAT_OFFSETS = [0, -350, -550]; 
+  // Usamos offsets dinámicos del config
+  const TICKET_CAT_OFFSETS = [
+    0, 
+    -(config.tickets.cat2Offset?.value || 350), 
+    -(config.tickets.cat3Offset?.value || 550)
+  ]; 
+  
   activeTicketIds.forEach(id => {
     const match = MATCHES.find(m => m.id === id);
     if (match) {

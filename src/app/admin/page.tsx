@@ -4,7 +4,7 @@ import {
  Settings, Save, RefreshCw, DollarSign, 
  Hotel, Plane, Ticket, Users, ShieldCheck, 
  ArrowRightLeft, AlertCircle, Info, Calculator,
- Edit3, Type, Eye, Layers, Lock, Unlock, Key
+ Edit3, Type, Eye, Layers, Lock, Unlock, Key, Percent
 } from 'lucide-react';
 
 const GlobalStyles = () => (
@@ -28,7 +28,6 @@ const AdminDashboard = () => {
  const [authError, setAuthError] = useState(false);
 
  useEffect(() => {
-  // Check session storage for existing auth
   const sessionAuth = typeof window !== 'undefined' ? sessionStorage.getItem('admin_auth') : null;
   if (sessionAuth === 'true') {
     setIsAuthenticated(true);
@@ -167,13 +166,13 @@ const AdminDashboard = () => {
  <div className="flex gap-3">
  <button 
   onClick={() => {
-   if(confirm("¿Seguro que quieres volver a cerrar sesión?")) {
+   if(confirm("¿Seguro que quieres cerrar sesión?")) {
     sessionStorage.removeItem('admin_auth');
     window.location.reload();
    }
   }}
   className="bg-slate-100 text-slate-500 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2">
- <Unlock size={16} /> Cerrar Sesión
+ <Unlock size={16} /> Salir
  </button>
  <button 
   onClick={handleSave}
@@ -189,18 +188,15 @@ const AdminDashboard = () => {
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
  
  <div className="lg:col-span-5 space-y-8">
+ {/* TRANSPORTE */}
  <section className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
  <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
  <Plane size={18} className="text-blue-600" />
- <input 
-  value={data.main.title.label} 
-  onChange={(e) => updateLab('main', 'title', e.target.value)}
-  className="bg-transparent font-black text-xs uppercase tracking-widest text-slate-400 label-edit w-full"
- />
+ <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Transporte y Base</h3>
  </div>
 
  <div className="space-y-10">
- {['charterBase', 'charterFlight'].map(key => (
+ {['charterFlight', 'charterBase'].map(key => (
  <div key={key} className="group">
  <input 
   value={data.main[key].label}
@@ -222,10 +218,11 @@ const AdminDashboard = () => {
  </div>
  </section>
 
+ {/* REGLAS Y MULTIPLICADORES */}
  <section className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
  <div className="flex items-center gap-3 mb-6 text-slate-900">
  <ArrowRightLeft size={18} className="text-blue-600" />
- <h3 className="text-xs font-black uppercase tracking-widest">Multiplicadores y Reglas</h3>
+ <h3 className="text-xs font-black uppercase tracking-widest">Multiplicadores (Calidad y Ocupación)</h3>
  </div>
  <div className="grid grid-cols-2 gap-6">
  {Object.keys(data.rules).map(key => (
@@ -235,13 +232,16 @@ const AdminDashboard = () => {
   onChange={(e) => updateLab('rules', key, e.target.value)}
   className="bg-transparent text-[9px] font-black text-slate-400 uppercase label-edit w-full"
  />
+ <div className="relative">
+ <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px] font-bold">coeff</span>
  <input 
   type="number"
   step="0.01"
   value={data.rules[key].value}
   onChange={(e) => updateVal('rules', key, e.target.value)}
-  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-black text-slate-900 input-light"
+  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-4 pr-10 text-sm font-black text-slate-900 input-light"
  />
+ </div>
  </div>
  ))}
  </div>
@@ -250,10 +250,11 @@ const AdminDashboard = () => {
 
  <div className="lg:col-span-7 space-y-8">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+ {/* CIUDADES / STAY */}
  <section className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
  <div className="flex items-center gap-3 mb-8 text-slate-900">
  <Hotel size={18} className="text-blue-600" />
- <h3 className="text-xs font-black uppercase tracking-widest">Solo Paquete Terrestre</h3>
+ <h3 className="text-xs font-black uppercase tracking-widest">Valores de Estancia (Gold Single)</h3>
  </div>
  <div className="space-y-6">
  {Object.keys(data.individual).map(key => (
@@ -278,10 +279,11 @@ const AdminDashboard = () => {
  </div>
  </section>
 
+ {/* TICKETS Y CATEGORIAS */}
  <section className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
  <div className="flex items-center gap-3 mb-8 text-slate-900">
  <Ticket size={18} className="text-blue-600" />
- <h3 className="text-xs font-black uppercase tracking-widest">Deducción por Estadio</h3>
+ <h3 className="text-xs font-black uppercase tracking-widest">Entradas y Descuentos CAT</h3>
  </div>
  <div className="space-y-6">
  {Object.keys(data.tickets).map(key => (
@@ -307,18 +309,20 @@ const AdminDashboard = () => {
  </section>
  </div>
 
+ {/* INFO LOGICA */}
  <div className="bg-white p-10 rounded-[3rem] border border-slate-200 flex gap-8 items-start shadow-sm">
  <div className="bg-blue-50 p-4 rounded-3xl text-blue-600 shrink-0">
  <Info size={32} />
  </div>
  <div className="space-y-3">
- <h4 className="text-sm font-black uppercase text-slate-900">Lógica de Sincronización Automática</h4>
- <p className="text-xs text-slate-500 font-medium leading-relaxed">
- Si modificas una <strong className="text-slate-700">Etiqueta</strong> (haciendo clic en el texto gris), el nombre cambiará en el cotizador del cliente.
- Si modificas un <strong className="text-slate-700">Valor</strong>, el precio se recalculará. El sistema usa los "Valores de Entrada" para restar dinero si el cliente decide no ir al partido pero se queda con el grupo en el Chárter.
- </p>
+ <h4 className="text-sm font-black uppercase text-slate-900">Guía de Gestión Atómica</h4>
+ <ul className="text-xs text-slate-500 font-medium leading-relaxed space-y-2">
+  <li>• <strong className="text-slate-700">Multiplicadores:</strong> Los factores de Single (1.0), Double (~0.61) y Triple (~0.53) afectan solo a la parte de Estancia.</li>
+  <li>• <strong className="text-slate-700">Tickets CAT:</strong> Los campos "Descuento CAT" son valores que se restan al precio base de la entrada si el usuario baja de categoría.</li>
+  <li>• <strong className="text-slate-700">Edición en Vivo:</strong> Al hacer clic en las etiquetas grises puedes renombrar los servicios que el cliente ve en el cotizador.</li>
+ </ul>
  <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full w-fit">
- <ShieldCheck size={14} /> Seguridad de Datos Activa
+ <ShieldCheck size={14} /> Sistema Sincronizado con GitHub
  </div>
  </div>
  </div>

@@ -13,7 +13,9 @@
   "tickets": {
     "m1": { "label": "Entrada 1", "value": 900.0 },
     "m2": { "label": "Entrada 2", "value": 900.0 },
-    "m3": { "label": "Entrada 3", "value": 900.0 }
+    "m3": { "label": "Entrada 3", "value": 900.0 },
+    "cat2Offset": { "label": "Descuento CAT 2", "value": 350.0 },
+    "cat3Offset": { "label": "Descuento CAT 3", "value": 550.0 }
   },
   "rules": {
     "silver": { "label": "Factor Silver", "value": 0.81 },
