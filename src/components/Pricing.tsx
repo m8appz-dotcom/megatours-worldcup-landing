@@ -66,7 +66,8 @@ export const Pricing = () => {
  const [config, setConfig] = useState<any>(null);
  const [isLoading, setIsLoading] = useState(true);
  const [wizardStep, setWizardStep] = useState(0);
- const [activeMatchIds, setActiveMatchIds] = useState([1, 2, 3]);
+ const [activeCityIds, setActiveCityIds] = useState([1, 2, 3]);
+ const [activeTicketIds, setActiveTicketIds] = useState([1, 2, 3]);
  const [includeCharter, setIncludeCharter] = useState(true);
  const [hotelQuality, setHotelQuality] = useState<'Gold' | 'Silver' | 'Bronze'>('Gold');
  const [ticketCat, setTicketCat] = useState(0);
@@ -88,35 +89,41 @@ export const Pricing = () => {
 
   let total = 0;
   
+  // 1. Transporte
   if (includeCharter) {
    total = config.main.charterBase.value + config.main.charterFlight.value;
-   const inactiveIds = [1, 2, 3].filter(id => !activeMatchIds.includes(id));
-   inactiveIds.forEach(id => {
-    const match = MATCHES.find(m => m.id === id);
-    if (match) {
-     total -= config.individual[match.configKey].value;
-     total -= config.tickets[match.ticketKey].value;
-    }
-   });
   } else {
-   total = activeMatchIds.reduce((acc, id) => {
-    const match = MATCHES.find(m => m.id === id);
-    if (!match) return acc;
-    return acc + config.individual[match.configKey].value + config.tickets[match.ticketKey].value;
-   }, 0);
+   total = config.main.charterFlight.value;
   }
 
+  // 2. Estancia (Ciudades) - Multiplicada por el hotel
   const hotelMultiplier = hotelQuality === 'Gold' ? 1 : 
                          hotelQuality === 'Silver' ? config.rules.silver.value : 
                          config.rules.bronze.value;
   
-  total = total * hotelMultiplier;
-  const TICKET_DISCOUNTS = [0, -400, -600]; 
-  total += (activeMatchIds.length * TICKET_DISCOUNTS[ticketCat]);
-  if (activeMatchIds.length === 3) total *= 0.95;
+  const citiesTotal = activeCityIds.reduce((acc, id) => {
+   const match = MATCHES.find(m => m.id === id);
+   return acc + (match ? config.individual[match.configKey].value : 0);
+  }, 0);
+  
+  total += (citiesTotal * hotelMultiplier);
+
+  // 3. Entradas (Tickets) - Con descuentos de categoría
+  const ticketsTotal = activeTicketIds.reduce((acc, id) => {
+   const match = MATCHES.find(m => m.id === id);
+   if (!match) return acc;
+   const ticketBase = config.tickets[match.ticketKey].value;
+   const TICKET_DISCOUNTS = [0, -400, -600];
+   return acc + ticketBase + TICKET_DISCOUNTS[ticketCat];
+  }, 0);
+  
+  total += ticketsTotal;
+
+  // 4. Descuento Paquete Completo (si tiene los 3 partidos)
+  if (activeTicketIds.length === 3) total *= 0.95;
 
   return Math.max(total, 0);
- }, [config, activeMatchIds, includeCharter, hotelQuality, ticketCat]);
+ }, [config, activeCityIds, activeTicketIds, includeCharter, hotelQuality, ticketCat]);
 
  const formatPrice = (value: number) => {
   return value.toLocaleString('en-US', { 
@@ -257,41 +264,64 @@ export const Pricing = () => {
  <section>
  <div className="flex items-center gap-3 mb-6 md:mb-8">
  <div className="bg-[#FCD116] text-[#0A0C12] w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center text-xs md:text-sm font-black">01</div>
- <h3 className="text-[10px] md:text-xs font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-[#6B75A1]">Módulos de Ciudad (Sede + Estadio)</h3>
+ <h3 className="text-[10px] md:text-xs font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-[#6B75A1]">Módulos de Ciudad (Hospedaje + Entradas)</h3>
  </div>
  <div className="space-y-4">
- {MATCHES.map(match => (
- <div 
- key={match.id}
- className={`p-4 md:p-6 rounded-2xl md:rounded-[2rem] border-2 transition-all flex flex-col sm:flex-row justify-between items-center gap-4 ${
- activeMatchIds.includes(match.id) 
- ? 'border-[#2A2E37] bg-[#1A1D24]' 
- : 'border-transparent bg-slate-900/20 opacity-40'
- }`}
- >
- <div className="flex items-center gap-4 md:gap-6 w-full sm:w-auto">
- <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-sm md:text-base ${activeMatchIds.includes(match.id) ? 'bg-[#0033A0] text-white' : 'bg-slate-800'}`}>
- {match.id}
- </div>
- <div className="min-w-0">
- <div className="text-[8px] md:text-[10px] font-bold text-[#6B75A1] uppercase tracking-widest">{match.sede}</div>
- <div className="text-base md:text-xl font-bold leading-tight text-white truncate">vs {match.rival}</div>
- <div className="text-[8px] md:text-[9px] font-bold text-[#FCD116] uppercase mt-1 tracking-wider">
-  {config?.individual[match.configKey]?.label || match.details}
- </div>
- </div>
- </div>
- <div className="flex items-center gap-4 md:gap-6 w-full sm:w-auto justify-between sm:justify-end">
- <span className="text-[10px] md:text-xs font-bold text-slate-500">{match.fecha}</span>
- <button 
- onClick={() => setActiveMatchIds(prev => prev.includes(match.id) ? prev.filter(m => m !== match.id) : [...prev, match.id].sort())}
- className={`p-2.5 md:p-3 rounded-full transition-all ${activeMatchIds.includes(match.id) ? 'text-red-500 hover:bg-red-500/10' : 'text-[#FCD116] hover:bg-[#FCD116]/10'}`}
- >
- {activeMatchIds.includes(match.id) ? <MinusCircle size={24} /> : <CheckCircle2 size={24} />}
- </button>
- </div>
- </div>
- ))}
+ {MATCHES.map(match => {
+  const isCityActive = activeCityIds.includes(match.id);
+  const isTicketActive = activeTicketIds.includes(match.id);
+  
+  return (
+  <div 
+  key={match.id}
+  className={`p-4 md:p-6 rounded-2xl md:rounded-[2rem] border-2 transition-all flex flex-col sm:flex-row justify-between items-center gap-4 ${
+  isCityActive || isTicketActive 
+  ? 'border-[#2A2E37] bg-[#1A1D24]' 
+  : 'border-transparent bg-slate-900/20 opacity-40'
+  }`}
+  >
+  <div className="flex items-center gap-4 md:gap-6 w-full sm:w-auto">
+  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-sm md:text-base ${isCityActive || isTicketActive ? 'bg-[#0033A0] text-white' : 'bg-slate-800'}`}>
+  {match.id}
+  </div>
+  <div className="min-w-0">
+  <div className="text-[8px] md:text-[10px] font-bold text-[#6B75A1] uppercase tracking-widest">{match.sede}</div>
+  <div className="text-base md:text-xl font-bold leading-tight text-white truncate">vs {match.rival}</div>
+  <div className="text-[8px] md:text-[9px] font-bold text-[#FCD116] uppercase mt-1 tracking-wider flex items-center gap-2">
+   {isCityActive && <span className="flex items-center gap-1"><Hotel size={10} /> Hotel</span>}
+   {isTicketActive && <span className="flex items-center gap-1"><Ticket size={10} /> Ticket</span>}
+   {!isCityActive && !isTicketActive && <span className="opacity-50">Desactivado</span>}
+  </div>
+  </div>
+  </div>
+  
+  <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+  <div className="flex items-center gap-2 bg-[#0A0C12] p-1 rounded-xl border border-[#2A2E37]">
+   <Tooltip text={isCityActive ? "Quitar Logística (Hotel/Traslados)" : "Incluir Logística (Hotel/Traslados)"}>
+    <button 
+    onClick={() => setActiveCityIds(prev => prev.includes(match.id) ? prev.filter(m => m !== match.id) : [...prev, match.id].sort())}
+    className={`p-2 rounded-lg transition-all flex items-center gap-2 ${isCityActive ? 'bg-[#0033A0] text-white' : 'text-slate-500 hover:bg-white/5'}`}
+    >
+     <Hotel size={18} />
+     <span className="text-[8px] font-bold uppercase tracking-widest">{isCityActive ? "On" : "Off"}</span>
+    </button>
+   </Tooltip>
+   <div className="w-px h-6 bg-[#2A2E37]" />
+   <Tooltip text={isTicketActive ? "Quitar Entrada al Estadio" : "Incluir Entrada al Estadio"}>
+    <button 
+    onClick={() => setActiveTicketIds(prev => prev.includes(match.id) ? prev.filter(m => m !== match.id) : [...prev, match.id].sort())}
+    className={`p-2 rounded-lg transition-all flex items-center gap-2 ${isTicketActive ? 'bg-[#FCD116] text-[#0A0C12]' : 'text-slate-500 hover:bg-white/5'}`}
+    >
+     <Ticket size={18} />
+     <span className="text-[8px] font-bold uppercase tracking-widest">{isTicketActive ? "On" : "Off"}</span>
+    </button>
+   </Tooltip>
+  </div>
+  <span className="text-[10px] md:text-xs font-bold text-slate-500 min-w-[40px] text-right">{match.fecha}</span>
+  </div>
+  </div>
+  );
+ })}
  </div>
  </section>
 
@@ -363,7 +393,7 @@ export const Pricing = () => {
  </div>
  </div>
 
- <div className="space-y-3 md:space-y-4 mb-8 md:mb-10 max-h-[200px] md:max-h-[250px] overflow-y-auto custom-scrollbar pr-2">
+ <div className="space-y-3 md:space-y-4 mb-8 md:mb-10 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
  <div className="flex justify-between items-start text-[10px] md:text-[11px] font-bold uppercase tracking-tight border-b border-slate-100 pb-3">
  <span className="text-[#6B75A1]">{config?.main?.charterFlight?.label || "Vuelo GYE-USA-GYE"}</span>
  <span className={includeCharter ? "text-[#0033A0]" : "text-slate-300"}>
@@ -371,32 +401,48 @@ export const Pricing = () => {
  </span>
  </div>
  
- {activeMatchIds.map(id => {
+ {activeCityIds.map(id => {
  const m = MATCHES.find(match => match.id === id);
  if (!m) return null;
  return (
- <div key={id} className="flex justify-between items-start text-[10px] md:text-[11px] font-bold uppercase tracking-tight border-b border-slate-100 pb-3">
+ <div key={`city-${id}`} className="flex justify-between items-start text-[10px] md:text-[11px] font-bold uppercase tracking-tight border-b border-slate-100 pb-3">
  <div className="flex flex-col min-w-0 pr-4">
- <span className="text-slate-900 leading-none mb-1 truncate">Módulo {m.sede}</span>
- <span className="text-[7px] md:text-[8px] text-[#6B75A1] font-black uppercase tracking-widest">
-  {config?.individual[m.configKey]?.label || m.details}
+ <span className="text-slate-900 leading-none mb-1 truncate">🏨 Módulo Logística {m.sede}</span>
+ <span className="text-[7px] md:text-[8px] text-[#6B75A1] font-black uppercase tracking-widest leading-none">
+  Hotel {hotelQuality} + Traslados
  </span>
  </div>
- <span className="text-slate-400 font-black tracking-widest uppercase text-[8px] md:text-[9px] flex-shrink-0">{hotelQuality}</span>
+ <span className="text-slate-400 font-black tracking-widest uppercase text-[8px] md:text-[9px] flex-shrink-0">Tierra</span>
  </div>
  );
  })}
 
- {activeMatchIds.length === 0 && (
+ {activeTicketIds.map(id => {
+ const m = MATCHES.find(match => match.id === id);
+ if (!m) return null;
+ return (
+ <div key={`ticket-${id}`} className="flex justify-between items-start text-[10px] md:text-[11px] font-bold uppercase tracking-tight border-b border-slate-100 pb-3">
+ <div className="flex flex-col min-w-0 pr-4">
+ <span className="text-slate-900 leading-none mb-1 truncate">🎟️ Entrada Estadio {m.sede}</span>
+ <span className="text-[7px] md:text-[8px] text-[#6B75A1] font-black uppercase tracking-widest leading-none">
+  Categoría {ticketCat + 1}
+ </span>
+ </div>
+ <span className="text-[#0033A0] font-black tracking-widest uppercase text-[8px] md:text-[9px] flex-shrink-0">Partido</span>
+ </div>
+ );
+ })}
+
+ {activeCityIds.length === 0 && activeTicketIds.length === 0 && (
  <div className="p-4 bg-red-50 text-red-500 rounded-xl text-[9px] md:text-[10px] font-bold text-center">
- Error: Debe incluir al menos una ciudad.
+ Error: Seleccione al menos un servicio.
  </div>
  )}
  </div>
 
  <button 
  onClick={() => setWizardStep(1)}
- disabled={activeMatchIds.length === 0}
+ disabled={activeCityIds.length === 0 && activeTicketIds.length === 0}
  className="group w-full bg-[#0A0C12] text-white py-6 md:py-8 rounded-2xl md:rounded-[2.5rem] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-[11px] hover:bg-[#0033A0] transition-all flex items-center justify-center gap-3 md:gap-4 disabled:opacity-20"
  >
  Proceder a Reserva <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform text-[#FCD116] md:w-[18px] md:h-[18px]" />
