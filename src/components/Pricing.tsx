@@ -87,40 +87,48 @@ export const Pricing = () => {
  const currentPrice = useMemo(() => {
   if (!config) return 0;
 
-  let total = 0;
-  
-  // 1. Transporte
-  if (includeCharter) {
-   total = config.main.charterBase.value + config.main.charterFlight.value;
-  } else {
-   total = config.main.charterFlight.value;
-  }
+  // 1. TRANSPORTE (Vuelo)
+  let total = config.main.charterFlight.value;
 
-  // 2. Estancia (Ciudades) - Multiplicada por el hotel
+  // 2. ESTANCIA (Ciudades/Hoteles)
   const hotelMultiplier = hotelQuality === 'Gold' ? 1 : 
                          hotelQuality === 'Silver' ? config.rules.silver.value : 
                          config.rules.bronze.value;
   
-  const citiesTotal = activeCityIds.reduce((acc, id) => {
-   const match = MATCHES.find(m => m.id === id);
-   return acc + (match ? config.individual[match.configKey].value : 0);
-  }, 0);
+  let staysBase = 0;
+  if (includeCharter) {
+    // Modelo Chárter: Base de 13 noches menos ciudades no visitadas
+    staysBase = config.main.charterBase.value;
+    [1, 2, 3].forEach(id => {
+      if (!activeCityIds.includes(id)) {
+        const match = MATCHES.find(m => m.id === id);
+        if (match) staysBase -= config.individual[match.configKey].value;
+      }
+    });
+  } else {
+    // Modelo Individual: Solo ciudades seleccionadas
+    activeCityIds.forEach(id => {
+      const match = MATCHES.find(m => m.id === id);
+      if (match) staysBase += config.individual[match.configKey].value;
+    });
+  }
   
-  total += (citiesTotal * hotelMultiplier);
+  total += (staysBase * hotelMultiplier);
 
-  // 3. Entradas (Tickets) - Con descuentos de categoría
-  const ticketsTotal = activeTicketIds.reduce((acc, id) => {
-   const match = MATCHES.find(m => m.id === id);
-   if (!match) return acc;
-   const ticketBase = config.tickets[match.ticketKey].value;
-   const TICKET_DISCOUNTS = [0, -400, -600];
-   return acc + ticketBase + TICKET_DISCOUNTS[ticketCat];
-  }, 0);
-  
-  total += ticketsTotal;
+  // 3. TICKETS (Entradas)
+  const TICKET_CAT_OFFSETS = [0, -400, -600]; // CAT 1: base, CAT 2: -$400, CAT 3: -$600
+  activeTicketIds.forEach(id => {
+    const match = MATCHES.find(m => m.id === id);
+    if (match) {
+      total += config.tickets[match.ticketKey].value;
+      total += TICKET_CAT_OFFSETS[ticketCat];
+    }
+  });
 
-  // 4. Descuento Paquete Completo (si tiene los 3 partidos)
-  if (activeTicketIds.length === 3) total *= 0.95;
+  // 4. AHORRO PAQUETE (Monto fijo si lleva todo el programa)
+  if (activeCityIds.length === 3 && activeTicketIds.length === 3) {
+    total -= 500; 
+  }
 
   return Math.max(total, 0);
  }, [config, activeCityIds, activeTicketIds, includeCharter, hotelQuality, ticketCat]);
